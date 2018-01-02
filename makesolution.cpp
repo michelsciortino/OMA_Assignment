@@ -138,43 +138,43 @@ inline void DSaturCol(vector< vector<int> > &candSol, vector<int> &colNode, Grap
 	}
 }
 
-inline void greedyCol(vector< vector<int> > &candSol, vector<int> &colNode, Graph &g, vector< vector<int> > &adjList)
-{
-	//1) Make an empty vector representing all the unplaced nodes (i.e. all of them) and permute
-	int i, r, j;
-	vector<int> a(g.n);
-	for (i=0;i<g.n;i++) a[i]=i;
-	for(i=g.n-1; i>=0; i--){
-		r = rand()%(i+1);
-		swap(a[i],a[r]);
-	}
+//inline void greedyCol(vector< vector<int> > &candSol, vector<int> &colNode, Graph &g, vector< vector<int> > &adjList)
+//{
+//	//1) Make an empty vector representing all the unplaced nodes (i.e. all of them) and permute
+//	int i, r, j;
+//	vector<int> a(g.n);
+//	for (i=0;i<g.n;i++) a[i]=i;
+//	for(i=g.n-1; i>=0; i--){
+//		r = rand()%(i+1);
+//		swap(a[i],a[r]);
+//	}
+//
+//	//Now colour using the greedy algorithm. First, place the first node into the first group
+//	candSol.clear();
+//	candSol.push_back(vector<int>());
+//	candSol[0].push_back(a[0]);
+//	colNode[a[0]] = 0;
+//
+//	//Now go through the remaining nodes and see if they are suitable for any existing colour. If it isn't, we create a new colour
+//	for(i=1; i<g.n; i++){
+//		for(j=0; j<candSol.size(); j++){
+//			if(colourIsFeasible(a[i], candSol, j, colNode, adjList, g)){
+//				//the Item can be inserted into this group. So we do
+//				candSol[j].push_back(a[i]);
+//				colNode[a[i]] = j;
+//				break;
+//			}
+//		}
+//		if(j>=candSol.size()){
+//			//If we are here then the item could not be inserted into any of the existing groups. So we make a new one
+//			candSol.push_back(vector<int>());
+//			candSol.back().push_back(a[i]);
+//			colNode[a[i]] = candSol.size()-1;
+//		}
+//	}
+//}
 
-	//Now colour using the greedy algorithm. First, place the first node into the first group
-	candSol.clear();
-	candSol.push_back(vector<int>());
-	candSol[0].push_back(a[0]);
-	colNode[a[0]] = 0;
-
-	//Now go through the remaining nodes and see if they are suitable for any existing colour. If it isn't, we create a new colour
-	for(i=1; i<g.n; i++){
-		for(j=0; j<candSol.size(); j++){
-			if(colourIsFeasible(a[i], candSol, j, colNode, adjList, g)){
-				//the Item can be inserted into this group. So we do
-				candSol[j].push_back(a[i]);
-				colNode[a[i]] = j;
-				break;
-			}
-		}
-		if(j>=candSol.size()){
-			//If we are here then the item could not be inserted into any of the existing groups. So we make a new one
-			candSol.push_back(vector<int>());
-			candSol.back().push_back(a[i]);
-			colNode[a[i]] = candSol.size()-1;
-		}
-	}
-}
-
-int generateInitialK(Graph &g, int alg, vector<int> &bestColouring){
+int generateInitialK(Graph &g, vector<int> &bestColouring){
 	//Produce an solution using a constructive algorithm to get an intial setting for k
 	int i, j;
 
@@ -184,15 +184,13 @@ int generateInitialK(Graph &g, int alg, vector<int> &bestColouring){
 	for(i=0; i<g.n; i++){
 		for(j=0; j<g.n; j++){
 			if(g[i][j] && i!=j){
-				adjList[i].push_back(j);
+				adjList[i].push_back(j);         //TO BE OPTIMIZED
 			}
 		}
 	}
 
 	//Now make the solution
-	if(alg == 1) DSaturCol(candSol,colNode,g,adjList);
-	else greedyCol(candSol,colNode,g,adjList);
-	//Copy this solution into bestColouring
+	DSaturCol(candSol,colNode,g,adjList);
 	for(i=0;i<candSol.size();i++) for(j=0;j<candSol[i].size();j++) bestColouring[candSol[i][j]] = i;
 	//And return the number of colours it has used
 	return candSol.size();

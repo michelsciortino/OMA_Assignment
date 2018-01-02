@@ -156,13 +156,7 @@ void Problem::loadFile(char * instance, Graph &g) {
     student = newStudent;
     exams.clear();
 
-    //cout<<"done filling up conflict graph and its weight matrix\n\t";
     cout<<"\t"<<g.nbEdges<<" conflicting pairs found\n";
-    for (int i = 0; i<nExams; i++) {
-        for (int j = 0; j<nExams; j++) {
-            //cout<<"("<<i<<" "<<j<<" "<<g[i][j]<<") ";
-        }
-    }
     cout<<endl;
 
 

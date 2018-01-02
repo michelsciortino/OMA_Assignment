@@ -20,9 +20,9 @@
 #define MAX_ITERATION 16
 #define VERBOSE ON
 #define RAND_SEED ON
-#define CONSTR_ALG ON
+//#define CONSTR_ALG ON
 #define MIN_TARGET_COLS 2
-#define X_OVER_TYPE 1
+//#define X_OVER_TYPE 1
 
 using namespace std;
 
@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
         maxIterations = MAX_ITERATION,
         verbose = VERBOSE,
         randomSeed = RAND_SEED,
-        constructiveAlg = CONSTR_ALG,
+        //constructiveAlg = CONSTR_ALG,
         targetCols = MIN_TARGET_COLS;
         //xOverType = X_OVER_TYPE;
     bool solFound = false,
@@ -92,7 +92,8 @@ int main(int argc, char ** argv)
 
     //Make the adjacency list structure
 	int **neighbors = new int*[g.n];
-	g.makeAdjList(neighbors);
+	g.makeAdjList(neighbors); //lista adiacenze (prima col numero esami conflict, successive codici esami in conf)
+                              //OTTIMIZZARE per creare matrice adiacenze da usare in generateinitialK
 
     //Produce some output
 	if(verbose) cout<<" COLS     CPU-TIME     CHECKS"<<endl;
@@ -103,13 +104,13 @@ int main(int argc, char ** argv)
 	numConfChecks = 0;
 
 	//Data structures used for population and offspring
-	vector< vector<int> > population(popSize, vector<int>(g.n));
+	vector< vector<int> > population(POP_SIZE, vector<int>(g.n));
 	vector<int> popCosts(popSize);
 	vector<int> osp(g.n), bestColouring(g.n);
 
 
 	//Generate the initial value for k using greedy or dsatur algorithm
-	k = generateInitialK(g, constructiveAlg, bestColouring);
+	k = generateInitialK(g, bestColouring);
 	//..and write the results to the output file
 	int duration = int(((double)(clock()-clockStart)/CLOCKS_PER_SEC)*1000);
 	if(verbose>=1) cout<<setw(5)<<k<<setw(11)<<duration<<"ms\t"<<numConfChecks<<" (via constructive)"<<endl;
