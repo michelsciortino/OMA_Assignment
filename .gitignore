@@ -1,0 +1,8 @@
+
+*.slo
+*.stu
+*.txt
+*.exe
+*.depend
+*.cbp
+*.o

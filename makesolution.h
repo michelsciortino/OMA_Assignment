@@ -11,6 +11,6 @@
 using namespace std;
 
 
-int generateInitialK(Graph &g, vector<int> &bestColouring);
+int generateInitialK(Graph &g, vector<int> &FeasibleSolution);
 void makeInitSolution(Graph &g, vector<int> &sol, int k, int verbose);
 #endif // MAKESOLUTION_H_INCLUDED

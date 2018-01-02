@@ -3,69 +3,69 @@
 int ASSIGNED = INT_MIN;
 extern unsigned long long numConfChecks;
 
-inline bool colourIsFeasible(int v, vector< vector<int> > &sol, int c, vector<int> &colNode, vector< vector<int> > &adjList, Graph &g)
+inline bool timeSlotIsFeasible(int v, vector< vector<int> > &sol, int t, vector<int> &Exams, vector< vector<int> > &adjMatrix, Graph &g)
 {
-	//Checks to see whether vertex v can be feasibly inserted into colour c in sol.
+	//Checks to see whether vertex (exam) v can be feasibly inserted into timeslot t in sol.
 	int i;
 	numConfChecks++;
-	if(sol[c].size() > adjList[v].size()){
-		//check if any neighbours of v are currently in colour c
-		for(i=0; i<adjList[v].size(); i++){
+	if(sol[t].size() > adjMatrix[v].size()){
+		//check if any neighbours of v are currently in timeslot t
+		for(i=0; i<adjMatrix[v].size(); i++){
 			numConfChecks++;
-			if(colNode[adjList[v][i]] == c) return false;
+			if(Exams[adjMatrix[v][i]] == t) return false;
 		}
 		return true;
 	}
 	else {
-		//check if any vertices in colour c are adjacent to v
-		for(i=0; i<sol[c].size(); i++){
+		//check if any vertices in timeslot t are adjacent to v
+		for(i=0; i<sol[t].size(); i++){
 			numConfChecks++;
-			if(g[v][sol[c][i]]) return false;
+			if(g[v][sol[t][i]]) return false;
 		}
 		return true;
 	}
 }
 
-inline void assignAColourDSatur(bool &foundColour, vector< vector<int> > &candSol, vector<int> &permutation, int nodePos, vector<int> &satDeg, Graph &g, vector<int> &colNode, vector< vector<int> > &adjList)
+inline void assignATimeSlot(bool &foundTimeSlot, vector< vector<int> > &TimeSlots, vector<int> &permutation, int examPos, vector<int> &conflictDegrees, Graph &g, vector<int> &Exams, vector< vector<int> > &adjMatrix)
 {
-	int i, j, c=0, v=permutation[nodePos];
+	int i, j, t=0, v=permutation[examPos];
 	bool alreadyAdj;
 
-	while(c < candSol.size() && !foundColour){
-		//check if colour c is feasible for vertex v
-		if(colourIsFeasible(v, candSol, c, colNode, adjList, g)){
-			//v can be added to this colour
-			foundColour = true;
-			candSol[c].push_back(v);
-			colNode[v] = c;
-			//We now need to update satDeg. To do this we identify the uncloured nodes i that are adjacent to
-			//this newly coloured node v. If i is already adjacent to a node in colour c we do nothing,
-			//otherwise its saturation degree is increased...
-			for(i=0; i<satDeg.size(); i++){
+	while(t < TimeSlots.size() && !foundTimeSlot){
+		//check if timeslot t is feasible for vertex (exam) v
+		if(timeSlotIsFeasible(v, TimeSlots, t, Exams, adjMatrix, g)){
+			//v can be added to this timeslot
+			foundTimeSlot = true;
+			TimeSlots[t].push_back(v);
+			Exams[v] = t;
+			//We now need to update conflictDegrees. To do this we identify the not assigned exams i that are adjacent to
+			//this newly assigned exam v to timeslot t. If it is already adjacent to an exam in timeslot t we do nothing,
+			//otherwise its conflict degree is increased...
+			for(i=0; i<conflictDegrees.size(); i++){
 				numConfChecks++;
 				if(g[v][permutation[i]]){
 					alreadyAdj = false;
 					j=0;
-					while(j<candSol[c].size()-1 && !alreadyAdj){
+					while(j<TimeSlots[t].size()-1 && !alreadyAdj){
 						numConfChecks++;
-						if(g[candSol[c][j]][permutation[i]]) alreadyAdj = true;
+						if(g[TimeSlots[t][j]][permutation[i]]) alreadyAdj = true;
 						j++;
 					}
 					if (!alreadyAdj)
-						satDeg[i]++;
+						conflictDegrees[i]++;
 				}
 			}
 		}
-		c++;
+		t++;
 	}
 }
 
-inline void DSaturCol(vector< vector<int> > &candSol, vector<int> &colNode, Graph &g, vector< vector<int> > &adjList)
+inline void FillTimeSlots(vector< vector<int> > &TimeSlots, vector<int> &Exams, Graph &g, vector< vector<int> > &adjMatrix)
 {
 	int i, j, r;
-	bool foundColour;
+	bool foundTimeSlot;
 
-	//Make a vector representing all the nodes
+	//Make a vector representing all the exams
 	vector<int> permutation(g.n);
 	for (i=0;i<g.n;i++)permutation[i]=i;
 	//Randomly permute the nodes, and then arrange by increasing order of degree
@@ -78,188 +78,153 @@ inline void DSaturCol(vector< vector<int> > &candSol, vector<int> &colNode, Grap
 	for(i=(permutation.size()-1); i>=0; i--){
 		for(j=1; j<=i; j++){
 			numConfChecks+=2;
-			if(adjList[permutation[j-1]].size() > adjList[permutation[j]].size()){
+			if(adjMatrix[permutation[j-1]].size() > adjMatrix[permutation[j]].size()){
 				swap(permutation[j-1],permutation[j]);
 			}
 		}
 	}
 
-	//We also have a vector to hold the saturation degrees of each node
-	vector<int> satDeg(permutation.size(), 0);
+	//We also have a vector to hold the conflict degrees of each node
+	vector<int> conflictDegrees(permutation.size(), 0);
 
-	//Initialise candSol and colNode
-	candSol.clear();
-	candSol.push_back(vector<int>());
-	for(i=0; i<colNode.size(); i++) colNode[i] = INT_MIN;
+	//Initializing TimeSlots and Exams
+	TimeSlots.clear();
+	TimeSlots.push_back(vector<int>());
+	for(i=0; i<Exams.size(); i++) Exams[i] = INT_MIN;
 
-	//Colour the rightmost node first (it has the highest degree), and remove it from the permutation
-	candSol[0].push_back(permutation.back());
-	colNode[permutation.back()] = 0;
+	//Assigning a timeslot to the rightmost node first (it has the highest degree), and remove it from the permutation
+	TimeSlots[0].push_back(permutation.back());
+	Exams[permutation.back()] = 0;
 	permutation.pop_back();
-	//..and update the saturation degree array
-	satDeg.pop_back();
-	for(i=0; i<satDeg.size(); i++){
+	//..and update the conflict degrees array
+	conflictDegrees.pop_back();
+	for(i=0; i<conflictDegrees.size(); i++){
 		numConfChecks++;
-		if(g[candSol[0][0]][permutation[i]]){
-			satDeg[i]++;
+		if(g[TimeSlots[0][0]][permutation[i]]){
+			conflictDegrees[i]++;
 		}
 	}
 
-	//Now colour the remaining nodes.
-	int nodePos = 0, maxSat;
+	//Now assign a timeslot to the remaining nodes.
+	int examPos = 0, maxConflict;
 	while(!permutation.empty()){
-		//choose the node to colour next (the rightmost node that has maximal satDegree)
-		maxSat = INT_MIN;
-		for(i=0; i<satDeg.size(); i++){
-			if(satDeg[i] >= maxSat){
-				maxSat = satDeg[i];
-				nodePos = i;
+		//choose the node to be assigned next (the rightmost node that has maximal conflictDegree)
+		maxConflict = INT_MIN;
+		for(i=0; i<conflictDegrees.size(); i++){
+			if(conflictDegrees[i] >= maxConflict){
+				maxConflict = conflictDegrees[i];
+				examPos = i;
 			}
 		}
-		//now choose which colour to assign to the node
-		foundColour = false;
-		assignAColourDSatur(foundColour, candSol, permutation, nodePos, satDeg, g, colNode, adjList);
-		if(!foundColour){
-			//If we are here we have to make a new colour as we have tried all the other ones and none are suitable
-			candSol.push_back(vector<int>());
-			candSol.back().push_back(permutation[nodePos]);
-			colNode[permutation[nodePos]] = candSol.size()-1;
-			//Remember to update the saturation degree array
+		//now choose which timeslot to assign to the node
+		foundTimeSlot = false;
+		assignATimeSlot(foundTimeSlot, TimeSlots, permutation, examPos, conflictDegrees, g, Exams, adjMatrix);
+		if(!foundTimeSlot){
+			//If we are here, we have to make a new timeslot as we have tried all the other ones and none is suitable
+			TimeSlots.push_back(vector<int>());
+			TimeSlots.back().push_back(permutation[examPos]);
+			Exams[permutation[examPos]] = TimeSlots.size()-1;
+			//Remember to update the conflict degrees array
 			for(i=0; i<permutation.size(); i++){
 				numConfChecks++;
-				if(g[permutation[nodePos]][permutation[i]]){
-					satDeg[i]++;
+				if(g[permutation[examPos]][permutation[i]]){
+					conflictDegrees[i]++;
 				}
 			}
 		}
 		//Finally, we remove the node from the permutation
-		permutation.erase(permutation.begin() + nodePos);
-		satDeg.erase(satDeg.begin() + nodePos);
+		permutation.erase(permutation.begin() + examPos);
+		conflictDegrees.erase(conflictDegrees.begin() + examPos);
 	}
 }
 
-//inline void greedyCol(vector< vector<int> > &candSol, vector<int> &colNode, Graph &g, vector< vector<int> > &adjList)
-//{
-//	//1) Make an empty vector representing all the unplaced nodes (i.e. all of them) and permute
-//	int i, r, j;
-//	vector<int> a(g.n);
-//	for (i=0;i<g.n;i++) a[i]=i;
-//	for(i=g.n-1; i>=0; i--){
-//		r = rand()%(i+1);
-//		swap(a[i],a[r]);
-//	}
-//
-//	//Now colour using the greedy algorithm. First, place the first node into the first group
-//	candSol.clear();
-//	candSol.push_back(vector<int>());
-//	candSol[0].push_back(a[0]);
-//	colNode[a[0]] = 0;
-//
-//	//Now go through the remaining nodes and see if they are suitable for any existing colour. If it isn't, we create a new colour
-//	for(i=1; i<g.n; i++){
-//		for(j=0; j<candSol.size(); j++){
-//			if(colourIsFeasible(a[i], candSol, j, colNode, adjList, g)){
-//				//the Item can be inserted into this group. So we do
-//				candSol[j].push_back(a[i]);
-//				colNode[a[i]] = j;
-//				break;
-//			}
-//		}
-//		if(j>=candSol.size()){
-//			//If we are here then the item could not be inserted into any of the existing groups. So we make a new one
-//			candSol.push_back(vector<int>());
-//			candSol.back().push_back(a[i]);
-//			colNode[a[i]] = candSol.size()-1;
-//		}
-//	}
-//}
-
-int generateInitialK(Graph &g, vector<int> &bestColouring){
-	//Produce an solution using a constructive algorithm to get an intial setting for k
+int generateInitialK(Graph &g, vector<int> &FeasibleSolution){
+	//Produce an solution using a constructive algorithm to get an intial setting for k (number of TimeSlots utilized)
 	int i, j;
 
 	//Make the structures needed for the constructive algorithms
-	vector< vector<int> > candSol, adjList(g.n,vector<int>());
-	vector<int> colNode(g.n, INT_MAX);
+	vector< vector<int> > TimeSlots;  //TimeSlots vector; each timeslot contains the list of the exams assigned to it
+	vector< vector<int> > adjMatrix(g.n,vector<int>()); //Adiacence Matrix: contains, for each exam, the list of the conficting exam
+	vector<int> Exams(g.n, INT_MAX);
 	for(i=0; i<g.n; i++){
 		for(j=0; j<g.n; j++){
 			if(g[i][j] && i!=j){
-				adjList[i].push_back(j);         //TO BE OPTIMIZED
+				adjMatrix[i].push_back(j);         //TO BE OPTIMIZED
 			}
 		}
 	}
 
 	//Now make the solution
-	DSaturCol(candSol,colNode,g,adjList);
-	for(i=0;i<candSol.size();i++) for(j=0;j<candSol[i].size();j++) bestColouring[candSol[i][j]] = i;
-	//And return the number of colours it has used
-	return candSol.size();
+	FillTimeSlots(TimeSlots,Exams,g,adjMatrix);
+	for(i=0;i<TimeSlots.size();i++) for(j=0;j<TimeSlots[i].size();j++) FeasibleSolution[TimeSlots[i][j]] = i;
+	//And return the number of timeslots it has used
+	return TimeSlots.size();
 }
 
 
 
 
-//-----------BELOW ARE THE FUNCTIONS FOR GENERATING SOLUTIONS WITH A MAXIMUM K COLOURS
-inline int assignToColour(vector< vector<bool> > &availCols, vector< vector<int> > &candSol, int k, int v)
+//-----------BELOW ARE THE FUNCTIONS FOR GENERATING SOLUTIONS WITH A MAXIMUM K TIMESLOTS
+inline int assignToTimeSlot(vector< vector<bool> > &availTSlots, vector< vector<int> > &TimeSlots, int k, int v)
 {
-	int c = 0;
-	while(c < k){
-		if(availCols[v][c]){
-			//colour c is OK for vertex v, so we assign it and exit
-			candSol[c].push_back(v);
-			return c;
+	int t = 0;
+	while(t < k){
+		if(availTSlots[v][t]){
+			//timeslot t is OK for vertex (exam) v, so we assign it and exit
+			TimeSlots[t].push_back(v);
+			return t;
 		}
-		c++;
+		t++;
 	}
-	//If we are here then there is an error as we thought v had available colours, but it turns out it didn't
+	//If we are here then there is an error as we thought v had available timeslots, but it turns out it didn't
 	exit(1);
 }
 
-inline void updateColOptions(vector< vector<bool> > &availCols, vector<int> &numColOptions, Graph &g, int v, int col)
+inline void updateTSOptions(vector< vector<bool> > &availTSlots, vector<int> &numTSOptions, Graph &g, int v, int tslot)
 {
 	int i;
-	//Updates colOptions vector due to node v being assigned a colour
-	numColOptions[v] = ASSIGNED;
+	//Updates TSOptions vector due to node v being assigned a timeslot
+	numTSOptions[v] = ASSIGNED;
 	for(i=0; i<g.n; i++){
-		if(numColOptions[i] != ASSIGNED){
+		if(numTSOptions[i] != ASSIGNED){
 			numConfChecks++;
-			if(availCols[i][col] && g[i][v]){
-				availCols[i][col] = false;
-				numColOptions[i]--;
+			if(availTSlots[i][tslot] && g[i][v]){
+				availTSlots[i][tslot] = false;
+				numTSOptions[i]--;
 			}
 		}
 	}
 }
 
-inline bool coloursAvailable(vector<int> &colOptions)
+inline bool timeSlotsAvailable(vector<int> &TSOptions)
 {
 	int i;
-	for(i=0; i<colOptions.size(); i++)
-		if(colOptions[i] >= 1)
+	for(i=0; i<TSOptions.size(); i++)
+		if(TSOptions[i] >= 1)
 			return true;
 	return false;
 }
 
-inline int chooseNextNode(vector<int> &colOptions)
+inline int chooseNextNode(vector<int> &TSOptions)
 {
 	int i;
 	int minOptions = INT_MAX;
 	vector<int> a;
-	for(i=0; i<colOptions.size(); i++)
-		if(colOptions[i] != ASSIGNED)
-			if(colOptions[i] >= 1){
-				if(colOptions[i] < minOptions){
+	for(i=0; i<TSOptions.size(); i++)
+		if(TSOptions[i] != ASSIGNED)
+			if(TSOptions[i] >= 1){
+				if(TSOptions[i] < minOptions){
 					a.clear();
 					a.push_back(i);
-					minOptions = colOptions[i];
+					minOptions = TSOptions[i];
 				}
-				else if (colOptions[i] == minOptions){
+				else if (TSOptions[i] == minOptions){
 					a.push_back(i);
 				}
 			}
 
 	if(a.empty()){
-		cout<<"Error: There were supposed to be choices, but aren't";
+		cout<<"Error: There were supposed to be choices, but there aren't";
 		exit(1);
 	}
 
@@ -269,46 +234,46 @@ inline int chooseNextNode(vector<int> &colOptions)
 
 void makeInitSolution(Graph &g, vector<int> &sol, int k, int verbose)
 {
-	int i, v, j, c;
+	int i, v, j, t;
 
-	//1) Make a 2D vector containing all colour options for each node (initially k for all nodes)
-	vector<int> numColOptions(g.n,k);
-	vector< vector<bool> > availCols(g.n, vector<bool>(k,true));
+	//1) Make a 2D vector containing all timeslots options for each node (initially k for all nodes)
+	vector<int> numTSOptions(g.n,k);
+	vector< vector<bool> > availTSlots(g.n, vector<bool>(k,true));
 
 	//... and make an empty solution in convienient representation
-	vector< vector<int> > candSol(k,vector<int>());
+	vector< vector<int> > TimeSlots(k,vector<int>());
 
-	//2) Now add a random node to the first colour and update colOptions
+	//2) Now add a random node to the first timeslot and update TSOptions
 	v = rand()%g.n;
-	c = assignToColour(availCols,candSol,k,v);
-	updateColOptions(availCols,numColOptions,g,v,c);
-	//3) For each remaining node with available colour options, choose a node with minimal (>=1) options and assign to an early colour
-	while(coloursAvailable(numColOptions)){
-		//choose node to colour
-		v = chooseNextNode(numColOptions);
-		//assign to a colour
-		c = assignToColour(availCols,candSol,k,v);
-		updateColOptions(availCols,numColOptions,g,v,c);
+	t = assignToTimeSlot(availTSlots,TimeSlots,k,v);
+	updateTSOptions(availTSlots,numTSOptions,g,v,t);
+	//3) For each remaining node with available timeslots options, choose a node with minimal (>=1) options and assign to an early timeslot
+	while(timeSlotsAvailable(numTSOptions)){
+		//choose node to be assigned to the timeslot
+		v = chooseNextNode(numTSOptions);
+		//assign to a timeslot
+		t = assignToTimeSlot(availTSlots,TimeSlots,k,v);
+		updateTSOptions(availTSlots,numTSOptions,g,v,t);
 	}
 
-	//When we are here, we either have a full valid solution, or some nodes are still unplaced (marked with 0's in numColOptions)
-	//These are now placed in random colours
+	//When we are here, we either have a full valid solution, or some nodes are still unplaced (marked with 0's in numTSOptions)
+	//These are now placed in random timeslots
 	for(i=0; i<g.n; i++){
-		if(numColOptions[i] > 0){
-			cout<<"Error: node "<<i<<"should have gone somewhere as it appears to have had "<<numColOptions[i] << "colours available"<<endl;
+		if(numTSOptions[i] > 0){
+			cout<<"Error: node "<<i<<"should have gone somewhere as it appears to have had "<<numTSOptions[i] << "timeslots available"<<endl;
 			exit(1);
 		}
 
-		if(numColOptions[i] == 0){
-			//put node i into a random colour
-			candSol[rand()%k].push_back(i);
+		if(numTSOptions[i] == 0){
+			//put node i into a random timeslot
+			TimeSlots[rand()%k].push_back(i);
 		}
 	}
 
 	//3) Now tranfer to the more convienient representation in the population itself and end
 	for(i=0; i<k; i++){
-		for(j=0; j<candSol[i].size(); j++){
-			sol[candSol[i][j]] = i+1;
+		for(j=0; j<TimeSlots[i].size(); j++){
+			sol[TimeSlots[i][j]] = i+1;
 		}
 	}
 }
