@@ -10,6 +10,6 @@
 
 using namespace std;
 
-void doCrossover(int xOverType, vector<int> &osp, vector<int> &parents, Graph &g, int k, vector< vector<int> > &population);
+void doCrossover(vector<int> &osp, vector<int> &parents, Graph &g, int k, vector< vector<int> > &population);
 
 #endif // XOVER_H_INCLUDED

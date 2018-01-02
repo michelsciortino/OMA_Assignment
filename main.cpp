@@ -41,8 +41,8 @@ int main(int argc, char ** argv)
         verbose = VERBOSE,
         randomSeed = RAND_SEED,
         constructiveAlg = CONSTR_ALG,
-        targetCols = MIN_TARGET_COLS,
-        xOverType = X_OVER_TYPE;
+        targetCols = MIN_TARGET_COLS;
+        //xOverType = X_OVER_TYPE;
     bool solFound = false,
          doKempeMutation = false,
          measuringDiversity = false;
@@ -161,7 +161,7 @@ int main(int argc, char ** argv)
 		while(numConfChecks < maxChecks && !solFound){
 
 			//Choose parents and perform crossover to produce a new offspring
-			doCrossover(xOverType,osp,parents,g,k,population);
+			doCrossover(osp,parents,g,k,population);
 
 			//Improve the offspring via tabu search and record its cost
 			oCost = tabu(g, osp, k, maxIterations, 0, neighbors);

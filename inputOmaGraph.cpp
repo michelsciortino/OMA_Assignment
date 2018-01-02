@@ -6,7 +6,6 @@
 #include "string.h"
 #include "inputOmaGraph.h"
 #include "Graph.h"
-#include "string.h"
 
 
 using namespace std;

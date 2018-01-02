@@ -289,13 +289,8 @@ inline void nPointX(vector<int> &osp, vector<int> &parents, Graph &g, int k, vec
 	}
 }
 
-void doCrossover(int xOverType, vector<int> &osp, vector<int> &parents, Graph &g, int k, vector<vector<int> > &population)
+void doCrossover(vector<int> &osp, vector<int> &parents, Graph &g, int k, vector<vector<int> > &population)
 {
 	chooseParents(population.size(),parents);
-	if(xOverType==1)		multiParent(osp,parents,g,k,population,false);
-	else if(xOverType==2)	multiParent(osp,parents,g,k,population,true);
-	else if(xOverType==3)	multiParent(osp,parents,g,k,population,false);
-	else if(xOverType==4)	GGA(osp,parents,g,k,population);
-	else if(xOverType==5)	nPointX	(osp,parents,g,k,population);
-	else { 	cout<<"XOver specified does not exist\n"; exit(1); }
+	multiParent(osp,parents,g,k,population,false);
 }
