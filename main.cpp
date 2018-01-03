@@ -52,6 +52,8 @@ int main(int argc, char ** argv)
     unsigned long long numConfChecks = 0;   //This variable keeps count of the number of times information
                                             //about the instance is looked up
 
+    clock_t clockStart = clock();
+
     //Checking command line input
     if(argc!=4)
     {
@@ -99,7 +101,7 @@ int main(int argc, char ** argv)
 	if(verbose) cout<<" COLS     CPU-TIME     CHECKS"<<endl;
 
 	//Seed and start timer
-	clock_t clockStart = clock();
+	//clock_t clockStart = clock();
 	srand(randomSeed);
 	numConfChecks = 0;
 
@@ -111,6 +113,7 @@ int main(int argc, char ** argv)
 
 	//Generate the initial value for k using greedy or dsatur algorithm
 	k = generateInitialK(g, bestColouring);
+	cout<<"Min k found: "<<k<<endl;
 	//..and write the results to the output file
 	int duration = int(((double)(clock()-clockStart)/CLOCKS_PER_SEC)*1000);
 	if(verbose>=1) cout<<setw(5)<<k<<setw(11)<<duration<<"ms\t"<<numConfChecks<<" (via constructive)"<<endl;
@@ -128,8 +131,8 @@ int main(int argc, char ** argv)
 
 
 	//MAIN ALGORITHM
-	k--;
-	while(numConfChecks < maxChecks && k+1 > targetCols){
+	//k--;
+	while(numConfChecks < maxChecks && k > targetCols){
 		solFound = false;
 
 		//First build the population
@@ -207,7 +210,7 @@ int main(int argc, char ** argv)
 			timeStream<<k<<"\tX\t"<<duration<<"\n";
 		}
 
-		k--;
+		k++;
 	} // while(numConfChecks < maxChecks && k+1 > targetCols)
     cout<<"Used timeslots: "<<k<<endl;
 	ofstream solStrm;
