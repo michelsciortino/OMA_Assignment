@@ -7,3 +7,5 @@
 *.cbp
 *.o
 *.layout
+*.exm
+*.sol

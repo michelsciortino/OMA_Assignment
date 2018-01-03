@@ -46,10 +46,11 @@ int main(int argc, char ** argv)
     bool solFound = false,
          doKempeMutation = false,
          measuringDiversity = false;
-    unsigned long long maxChecks = 100000000;
+    //unsigned long long maxChecks = 100000000;
+    unsigned long long maxChecks = INT_MAX;
     vector<int> parents;
     ofstream timeStream, confStream;        //OUTPUT FILES
-    unsigned long long numConfChecks = 0;   //This variable keeps count of the number of times information
+    numConfChecks = 0;   //This variable keeps count of the number of times information
                                             //about the instance is looked up
 
     clock_t clockStart = clock();
@@ -132,7 +133,8 @@ int main(int argc, char ** argv)
 
 	//MAIN ALGORITHM
 	//k--;
-	while(numConfChecks < maxChecks && k > targetCols){
+	k=20;
+	while(numConfChecks < maxChecks && k <= targetCols){
 		solFound = false;
 
 		//First build the population
@@ -197,7 +199,7 @@ int main(int argc, char ** argv)
 			timeStream<<k<<"\t"<<duration<<"\n";
 			//Copy the current solution as the best solution
 			for(int i=0; i<g.n; i++) bestColouring[i] = osp[i]-1;
-			if(k<=targetCols){
+			if(k==targetCols){
 				if(verbose>=1) cout<<"\nSolution with  <="<<targetCols<<" colours has been found. Ending..."<<endl;
 				confStream<<"1\t"<<"X"<<"\n";
 				timeStream<<"1\t"<<"X"<<"\n";
@@ -214,9 +216,9 @@ int main(int argc, char ** argv)
 	} // while(numConfChecks < maxChecks && k+1 > targetCols)
     cout<<"Used timeslots: "<<k<<endl;
 	ofstream solStrm;
-	solStrm.open("solution.txt");
+	solStrm.open("solution.sol");
 	//solStrm<<g.n<<"\n";
-	for(int i=0;i<g.n;i++)solStrm<<(i+1)<<" "<<bestColouring[i]<<"\n";
+	for(int i=0;i<g.n;i++)solStrm<<(i+1)<<" "<<bestColouring[i]+1<<"\n";
 	solStrm.close();
 
     // try to get an optimal solution
