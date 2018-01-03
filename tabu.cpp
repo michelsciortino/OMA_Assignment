@@ -10,7 +10,7 @@ using namespace std;
 
 int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **neighbors)
 {
-	int ** nodesByColor; // Arrays of nodes for each color
+	int ** nodesByTimeSlot; // Arrays of nodes for each color
 	int * nbcPosition;   // Position of each node in the above array
 	int ** conflicts;   // Number of conflicts for each color and node
 	int ** tabuStatus;  // Tabu status for each node and color
@@ -28,7 +28,7 @@ int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **
 
 	int tabuTenure = 5; //This is effetively a random choice
 
-	initializeArrays(nodesByColor, conflicts, tabuStatus, nbcPosition, g, c, k);
+	initializeArrays(nodesByTimeSlot, conflicts, tabuStatus, nbcPosition, g, c, k);
 	// Count the number of conflicts and set up the list nodesInConflict
 	// with the associated list confPosition
 	nodesInConflict[0]=0;
@@ -103,7 +103,7 @@ int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **
 		}
 
 		int tTenure = tabuTenure;
-		moveNodeToColorForTabu(bestNode, bestColor, g, c, nodesByColor, conflicts, nbcPosition, neighbors, nodesInConflict, confPosition, tabuStatus, totalIterations, tTenure);
+		moveNodeToColorForTabu(bestNode, bestColor, g, c, nodesByTimeSlot, conflicts, nbcPosition, neighbors, nodesInConflict, confPosition, tabuStatus, totalIterations, tTenure);
 		totalConflicts = bestValue;
 
 		//Now update the tabu tenure
@@ -132,7 +132,7 @@ int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **
 
 	}// END OF TABU LOOP
 
-	freeArrays(nodesByColor, conflicts, tabuStatus, nbcPosition, k, g.n);
+	freeArrays(nodesByTimeSlot, conflicts, tabuStatus, nbcPosition, k, g.n);
 	delete [] nodesInConflict;
 	delete [] confPosition;
 

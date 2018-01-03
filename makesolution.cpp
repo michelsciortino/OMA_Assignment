@@ -183,7 +183,7 @@ inline int assignToTimeSlot(vector< vector<bool> > &availTSlots, vector< vector<
 inline void updateTSOptions(vector< vector<bool> > &availTSlots, vector<int> &numTSOptions, Graph &g, int v, int tslot)
 {
 	int i;
-	//Updates TSOptions vector due to node v being assigned a timeslot
+	//Updates numTSOptions vector due to node v being assigned a timeslot
 	numTSOptions[v] = ASSIGNED;
 	for(i=0; i<g.n; i++){
 		if(numTSOptions[i] != ASSIGNED){
@@ -196,29 +196,29 @@ inline void updateTSOptions(vector< vector<bool> > &availTSlots, vector<int> &nu
 	}
 }
 
-inline bool timeSlotsAvailable(vector<int> &TSOptions)
+inline bool timeSlotsAvailable(vector<int> &numTSOptions)
 {
 	int i;
-	for(i=0; i<TSOptions.size(); i++)
-		if(TSOptions[i] >= 1)
+	for(i=0; i<numTSOptions.size(); i++)
+		if(numTSOptions[i] >= 1)
 			return true;
 	return false;
 }
 
-inline int chooseNextNode(vector<int> &TSOptions)
+inline int chooseNextNode(vector<int> &numTSOptions)
 {
 	int i;
 	int minOptions = INT_MAX;
 	vector<int> a;
-	for(i=0; i<TSOptions.size(); i++)
-		if(TSOptions[i] != ASSIGNED)
-			if(TSOptions[i] >= 1){
-				if(TSOptions[i] < minOptions){
+	for(i=0; i<numTSOptions.size(); i++)
+		if(numTSOptions[i] != ASSIGNED)
+			if(numTSOptions[i] >= 1){
+				if(numTSOptions[i] < minOptions){
 					a.clear();
 					a.push_back(i);
-					minOptions = TSOptions[i];
+					minOptions = numTSOptions[i];
 				}
-				else if (TSOptions[i] == minOptions){
+				else if (numTSOptions[i] == minOptions){
 					a.push_back(i);
 				}
 			}
@@ -243,7 +243,7 @@ void makeInitSolution(Graph &g, vector<int> &sol, int k, int verbose)
 	//... and make an empty solution in convienient representation
 	vector< vector<int> > TimeSlots(k,vector<int>());
 
-	//2) Now add a random node to the first timeslot and update TSOptions
+	//2) Now add a random node to the first timeslot and update numTSOptions
 	v = rand()%g.n;
 	t = assignToTimeSlot(availTSlots,TimeSlots,k,v);
 	updateTSOptions(availTSlots,numTSOptions,g,v,t);

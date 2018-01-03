@@ -121,6 +121,10 @@ int main(int argc, char ** argv)
 		confStream<<"1\t"<<"X"<<"\n";
 		timeStream<<"1\t"<<"X"<<"\n";
 	}
+	else{
+        cout<<"Unfeasible problem"<<endl;
+        exit(0);
+	}
 
 
 	//MAIN ALGORITHM
