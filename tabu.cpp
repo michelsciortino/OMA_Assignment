@@ -134,8 +134,5 @@ int tabu(Graph &g, vector<int> &t, int k, int maxIterations, int verbose, int **
 	freeArrays(nodesByTimeSlot, conflicts, tabuStatus, nbcPosition, k, g.n);
 	delete [] nodesInConflict;
 	delete [] confPosition;
-
-
 	return totalConflicts;
-
 }

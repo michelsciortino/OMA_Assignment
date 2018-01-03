@@ -209,13 +209,12 @@ int main(int argc, char ** argv)
 
 		k--;
 	} // while(numConfChecks < maxChecks && k+1 > targetCols)
-
+    cout<<"Used timeslots: "<<k<<endl;
 	ofstream solStrm;
 	solStrm.open("solution.txt");
-	solStrm<<g.n<<"\n";
-	for(int i=0;i<g.n;i++)solStrm<<bestColouring[i]<<"\n";
+	//solStrm<<g.n<<"\n";
+	for(int i=0;i<g.n;i++)solStrm<<(i+1)<<" "<<bestColouring[i]<<"\n";
 	solStrm.close();
-
 
     // try to get an optimal solution
     /* OPTIMIZATION
