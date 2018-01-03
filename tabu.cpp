@@ -49,8 +49,8 @@ int tabu(Graph &g, vector<int> &t, int k, int maxIterations, int verbose, int **
 		return 0;
 	}
 
-	int minSolutionValue = g.n;
-	int maxSolutionValue = 0;
+	//int minSolutionValue = g.n;
+	//int maxSolutionValue = 0;
 
 	//Main TABU LOOP
 	while (totalIterations < maxIterations) {
@@ -101,7 +101,6 @@ int tabu(Graph &g, vector<int> &t, int k, int maxIterations, int verbose, int **
 		if (verbose>2) {
 			cout << "Will move node " << bestNode << " to timeslot " << bestTimeSlot << " with value " << bestValue << " oldconf = " << conflicts[t[bestNode]][bestNode]			<< " newconf = " << conflicts[bestTimeSlot][bestNode] << " totalConflicts = " << totalConflicts<< endl;
 		}
-
 		int tTenure = tabuTenure;
 		moveNodeToAssignForTabu(bestNode, bestTimeSlot, g, t, nodesByTimeSlot, conflicts, nbcPosition, neighbors, nodesInConflict, confPosition, tabuStatus, totalIterations, tTenure);
 		totalConflicts = bestValue;
@@ -119,8 +118,8 @@ int tabu(Graph &g, vector<int> &t, int k, int maxIterations, int verbose, int **
 				break;
 			}
 			// Otherwise reinitialize some values
-			minSolutionValue = g.n*g.n;
-			maxSolutionValue = 0;
+			//minSolutionValue = g.n*g.n;
+			//maxSolutionValue = 0;
 			nextVerbose = totalIterations;
 		}
 
