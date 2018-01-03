@@ -39,8 +39,8 @@ int tabu(Graph &g, vector<int> &t, int k, int maxIterations, int verbose, int **
 			nodesInConflict[ (confPosition[i]=++nodesInConflict[0]) ] = i;
 		}
 	}
-	totalConflicts /=2;
-	if (verbose>1) cout << "Initialized the arrays. #Conflicts = " << totalConflicts << endl;
+	//totalConflicts /=2;
+	if (verbose>=1) cout << "Initialized the arrays. #Conflicts = " << totalConflicts << endl;
 
 	int bestSolutionValue = totalConflicts; // Number of conflicts
 

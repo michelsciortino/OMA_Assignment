@@ -133,7 +133,6 @@ int main(int argc, char ** argv)
 
 	//MAIN ALGORITHM
 	//k--;
-	k=20;
 	while(numConfChecks < maxChecks && k <= targetCols){
 		solFound = false;
 
@@ -152,13 +151,13 @@ int main(int argc, char ** argv)
 				break;
 			}
 			//Improve each solution via tabu search and record their costs
-			popCosts[i] = tabu(g, population[i], k, maxIterations, 0, neighbors);
+			popCosts[i] = tabu(g, population[i], k, maxIterations, 1, neighbors);
 			//Check to see whether this solution is now optimal or if the cuttoff point is reached. If so, we end
-			if(verbose>=2)cout<<"          -> Individual "<<setw(4)<<i<<" constructed. Cost = "<<popCosts[i]<<endl;
+			if(verbose>=1)cout<<"          -> Individual "<<setw(4)<<i<<" constructed. Cost = "<<popCosts[i]<<endl;
 			if(popCosts[i] == 0){
 				solFound = true;
 				for(int j=0; j<g.n; j++)osp[j]=population[i][j];
-				break;
+				//break;
 			}
 			if(numConfChecks >= maxChecks){
 				for(int j=0; j<g.n; j++)osp[j]=population[i][j];
@@ -168,7 +167,8 @@ int main(int argc, char ** argv)
 
 		//Now evolve the population
 		int rIts = 0, oCost = 1, best = INT_MAX;
-		while(numConfChecks < maxChecks && !solFound){
+		//while(numConfChecks < maxChecks && !solFound){
+		while(!solFound){
 
 			//Choose parents and perform crossover to produce a new offspring
 			doCrossover(osp,parents,g,k,population);
