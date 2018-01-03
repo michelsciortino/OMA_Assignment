@@ -8,12 +8,12 @@ extern unsigned long long numConfChecks;
 
 using namespace std;
 
-int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **neighbors)
+int tabu(Graph &g, vector<int> &t, int k, int maxIterations, int verbose, int **neighbors)
 {
-	int ** nodesByTimeSlot; // Arrays of nodes for each color
+	int ** nodesByTimeSlot; // Arrays of nodes for each timeslot
 	int * nbcPosition;   // Position of each node in the above array
-	int ** conflicts;   // Number of conflicts for each color and node
-	int ** tabuStatus;  // Tabu status for each node and color
+	int ** conflicts;   // Number of conflicts for each timeslot and node
+	int ** tabuStatus;  // Tabu status for each node and timeslot
 	int *nodesInConflict = new int [g.n+1];
 	int *confPosition = new int [g.n];
 
@@ -28,14 +28,14 @@ int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **
 
 	int tabuTenure = 5; //This is effetively a random choice
 
-	initializeArrays(nodesByTimeSlot, conflicts, tabuStatus, nbcPosition, g, c, k);
+	initializeArrays(nodesByTimeSlot, conflicts, tabuStatus, nbcPosition, g, t, k);
 	// Count the number of conflicts and set up the list nodesInConflict
 	// with the associated list confPosition
 	nodesInConflict[0]=0;
 	for (int i=0; i<g.n; i++) {
 		numConfChecks++;
-		if (conflicts[c[i]][i] > 0) {
-			totalConflicts += conflicts[c[i]][i];
+		if (conflicts[t[i]][i] > 0) {
+			totalConflicts += conflicts[t[i]][i];
 			nodesInConflict[ (confPosition[i]=++nodesInConflict[0]) ] = i;
 		}
 	}
@@ -44,7 +44,7 @@ int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **
 
 	int bestSolutionValue = totalConflicts; // Number of conflicts
 
-	// Just in case we already have an admissible k-coloring
+	// Just in case we already have an admissible k-timeslotting
 	if (bestSolutionValue == 0) {
 		return 0;
 	}
@@ -57,28 +57,28 @@ int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **
 		totalIterations++;
 		int nc = nodesInConflict[0];
 
-		int bestNode=-1, bestColor=-1, bestValue=g.n*g.n;
+		int bestNode=-1, bestTimeSlot=-1, bestValue=g.n*g.n;
 		int numBest=0;
 
 		// Try for every node in conflict
 		for (int iNode=1; iNode <= nodesInConflict[0]; iNode++) {
 			int node = nodesInConflict[iNode];
-			// to move it to every color except its existing one
-			for (int color=1; color<=k; color++) {
-				if (color != c[node]) {
+			// to move it to every timeslot except its existing one
+			for (int timeslot=1; timeslot<=k; timeslot++) {
+				if (timeslot != t[node]) {
 					numConfChecks+=2;
-					int newValue = totalConflicts + conflicts[color][node] - conflicts[c[node]][node];
-					if (newValue <= bestValue && color != c[node]) {
+					int newValue = totalConflicts + conflicts[timeslot][node] - conflicts[t[node]][node];
+					if (newValue <= bestValue && timeslot != t[node]) {
 						if (newValue < bestValue) {
 							numBest=0;
 						}
 						// Only consider the move if it is not tabu or leads to a new very best solution seen globally.
-						if (tabuStatus[node][color] < totalIterations || (newValue < bestSolutionValue)) {
+						if (tabuStatus[node][timeslot] < totalIterations || (newValue < bestSolutionValue)) {
 							// Select the nth move with probability 1/n
 							if ( (rand()%(numBest+1)) == 0 ) {//r.getInt(0,numBest)==0) {
-								//we will move node "bestNode" to the new colour "bestColour"
+								//we will move node "bestNode" to the new timeslot "bestTimeSlot"
 								bestNode = node;
-								bestColor = color;
+								bestTimeSlot = timeslot;
 								bestValue = newValue;
 							}
 							numBest++;  // Count the number of considered moves
@@ -91,19 +91,19 @@ int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **
 		// If no non tabu moves have been found, take any random move
 		if (bestNode == -1) {
 			bestNode = rand()%g.n;
-			while ((bestColor = (rand()%k)+1) != c[bestNode]);{
-				bestValue = totalConflicts + conflicts[bestColor][bestNode] - conflicts[c[bestNode]][bestNode];
+			while ((bestTimeSlot = (rand()%k)+1) != t[bestNode]);{
+				bestValue = totalConflicts + conflicts[bestTimeSlot][bestNode] - conflicts[t[bestNode]][bestNode];
 				numConfChecks+=2;
 			}
 		}
 
 		// Now execute the move
 		if (verbose>2) {
-			cout << "Will move node " << bestNode << " to color " << bestColor << " with value " << bestValue << " oldconf = " << conflicts[c[bestNode]][bestNode]			<< " newconf = " << conflicts[bestColor][bestNode] << " totalConflicts = " << totalConflicts<< endl;
+			cout << "Will move node " << bestNode << " to timeslot " << bestTimeSlot << " with value " << bestValue << " oldconf = " << conflicts[t[bestNode]][bestNode]			<< " newconf = " << conflicts[bestTimeSlot][bestNode] << " totalConflicts = " << totalConflicts<< endl;
 		}
 
 		int tTenure = tabuTenure;
-		moveNodeToColorForTabu(bestNode, bestColor, g, c, nodesByTimeSlot, conflicts, nbcPosition, neighbors, nodesInConflict, confPosition, tabuStatus, totalIterations, tTenure);
+		moveNodeToAssignForTabu(bestNode, bestTimeSlot, g, t, nodesByTimeSlot, conflicts, nbcPosition, neighbors, nodesInConflict, confPosition, tabuStatus, totalIterations, tTenure);
 		totalConflicts = bestValue;
 
 		//Now update the tabu tenure
@@ -113,9 +113,9 @@ int tabu(Graph &g, vector<int> &c, int k, int maxIterations, int verbose, int **
 		if (totalConflicts < bestSolutionValue) {
 			bestSolutionValue = totalConflicts;
 
-			// If all nodes are colored we report success and stop iterating
+			// If all nodes are assigned to a timeslot we report success and stop iterating
 			if (bestSolutionValue == 0) {
-				//We have found a feasible solution with k colours, so we jump out of the tabu loop
+				//We have found a feasible solution with k timeslots, so we jump out of the tabu loop
 				break;
 			}
 			// Otherwise reinitialize some values

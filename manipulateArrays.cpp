@@ -2,16 +2,16 @@
 
 extern unsigned long long numConfChecks;
 
-void initializeArrays(int ** & nodesByColor, int ** & conflicts, int ** & tabuStatus, int * & nbcPosition, Graph & g, vector<int> &c, int k) {
+void initializeArrays(int ** & nodesByTimeSlot, int ** & conflicts, int ** & tabuStatus, int * & nbcPosition, Graph & g, vector<int> &t, int k) {
 
 	int n=g.n;
 
-	// Allocate and initialize (k+1)x(n+1) array for nodesByColor and conflicts
-	nodesByColor = new int*[k+1];
+	// Allocate and initialize (k+1)x(n+1) array for nodesByTimeSlot and conflicts
+	nodesByTimeSlot = new int*[k+1];
 	conflicts = new int*[k+1];
 	for (int i=0; i<=k; i++) {
-		nodesByColor[i] = new int[n+1];
-		nodesByColor[i][0] = 0;
+		nodesByTimeSlot[i] = new int[n+1];
+		nodesByTimeSlot[i][0] = 0;
 		conflicts[i] = new int[n+1];
 		for (int j=0; j<=n; j++) {
 			conflicts[i][j]=0;
@@ -30,10 +30,10 @@ void initializeArrays(int ** & nodesByColor, int ** & conflicts, int ** & tabuSt
 	// Allocate the nbcPositions array
 	nbcPosition = new int[n];
 
-	// Initialize the nodesByColor and nbcPosition array
+	// Initialize the nodesByTimeSlot and nbcPosition array
 	for (int i=0; i<n; i++) {
 		// C is cool ;-)
-		nodesByColor[ c[i] ][ (nbcPosition[i] = ++nodesByColor[c[i]][0]) ] = i;
+		nodesByTimeSlot[ t[i] ][ (nbcPosition[i] = ++nodesByTimeSlot[t[i]][0]) ] = i;
 	}
 
 	// Initialize the conflicts and neighbors array.
@@ -41,28 +41,28 @@ void initializeArrays(int ** & nodesByColor, int ** & conflicts, int ** & tabuSt
 		for (int j=0; j<n; j++) {
 			numConfChecks++;
 			if (g[i][j] && i!=j) {
-				conflicts[c[j]][i]++;
+				conflicts[t[j]][i]++;
 			}
 		}
 	}
 }
 
-void moveNodeToColorForTabu(int bestNode, int bestColor, Graph & g, vector<int> &c, int ** nodesByColor, int ** conflicts, int * nbcPosition, int ** neighbors,
+void moveNodeToAssignForTabu(int bestNode, int bestTimeSlot, Graph & g, vector<int> &t, int ** nodesByTimeSlot, int ** conflicts, int * nbcPosition, int ** neighbors,
 	int * nodesInConflict, int * confPosition, int ** tabuStatus,  long totalIterations, int tabuTenure)
 {
-	int oldColor = c[bestNode];
-	// move bestNodes to bestColor
-	c[bestNode] = bestColor;
+	int oldTimeSlot = t[bestNode];
+	// move bestNodes to bestTimeSlot
+	t[bestNode] = bestTimeSlot;
 
 	// If bestNode is not a conflict node anymore, remove it from the list
 	numConfChecks+=2;
-	if (conflicts[oldColor][bestNode] && !(conflicts[bestColor][bestNode])) {
+	if (conflicts[oldTimeSlot][bestNode] && !(conflicts[bestTimeSlot][bestNode])) {
 		confPosition[nodesInConflict[nodesInConflict[0]]] = confPosition[bestNode];
 		nodesInConflict[confPosition[bestNode]] = nodesInConflict[nodesInConflict[0]--];
 	}
 	else {  // If bestNode becomes a conflict node, add it to the list
 		numConfChecks+=2;
-		if (!(conflicts[oldColor][bestNode]) && conflicts[bestColor][bestNode]) {
+		if (!(conflicts[oldTimeSlot][bestNode]) && conflicts[bestTimeSlot][bestNode]) {
 			nodesInConflict[ (confPosition[bestNode] = ++nodesInConflict[0]) ] = bestNode;
 		}
 	}
@@ -72,35 +72,35 @@ void moveNodeToColorForTabu(int bestNode, int bestColor, Graph & g, vector<int> 
 	for (int i=1; i<=neighbors[bestNode][0]; i++) {
 		int nb = neighbors[bestNode][i];
 		numConfChecks+=2;
-		// Decrease the number of conflicts in the old color
-		if ((--conflicts[oldColor][nb]) == 0 && c[nb] == oldColor) {
+		// Decrease the number of conflicts in the old timeslot
+		if ((--conflicts[oldTimeSlot][nb]) == 0 && t[nb] == oldTimeSlot) {
 			// Remove nb from the list of conflicting nodes if there are 0 conflicts in
-			// its own color
+			// its own timeslot
 			confPosition[nodesInConflict[nodesInConflict[0]]] = confPosition[nb];
 			nodesInConflict[confPosition[nb]] = nodesInConflict[nodesInConflict[0]--];
 		}
-		// Increase the number of conflicts in the new color
+		// Increase the number of conflicts in the new timeslot
 		numConfChecks++;
-		if ((++conflicts[bestColor][nb]) == 1 && c[nb] == bestColor) {
+		if ((++conflicts[bestTimeSlot][nb]) == 1 && t[nb] == bestTimeSlot) {
 			// Add nb from the list conflicting nodes if there is a new conflict in
-			// its own color
+			// its own timeslot
 			nodesInConflict[ (confPosition[nb] = ++nodesInConflict[0]) ] = nb;
 		}
 	}
 	// Set the tabu status
-	tabuStatus[bestNode][oldColor] = totalIterations + tabuTenure;
+	tabuStatus[bestNode][oldTimeSlot] = totalIterations + tabuTenure;
 }
 
-void freeArrays(int ** & nodesByColor, int ** & conflicts, int ** & tabuStatus, int * & nbcPosition, int k, int n)
+void freeArrays(int ** & nodesByTimeSlot, int ** & conflicts, int ** & tabuStatus, int * & nbcPosition, int k, int n)
 {
 	for (int i=0; i<=k; i++) {
-		delete[] nodesByColor[i];
+		delete[] nodesByTimeSlot[i];
 		delete[] conflicts[i];
 	}
 	for (int i=0; i<n; i++) {
 		delete[] tabuStatus[i];
 	}
-	delete[] nodesByColor;
+	delete[] nodesByTimeSlot;
 	delete[] conflicts;
 	delete[] tabuStatus;
 	delete[] nbcPosition;
