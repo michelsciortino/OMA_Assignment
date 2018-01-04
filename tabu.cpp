@@ -39,7 +39,7 @@ int tabu(Graph &g, vector<int> &t, int k, int maxIterations, int verbose, int **
 			nodesInConflict[ (confPosition[i]=++nodesInConflict[0]) ] = i;
 		}
 	}
-	//totalConflicts /=2;
+	totalConflicts /=2;
 	if (verbose>=1) cout << "Initialized the arrays. #Conflicts = " << totalConflicts << endl;
 
 	int bestSolutionValue = totalConflicts; // Number of conflicts
@@ -64,7 +64,7 @@ int tabu(Graph &g, vector<int> &t, int k, int maxIterations, int verbose, int **
 		for (int iNode=1; iNode <= nodesInConflict[0]; iNode++) {
 			int node = nodesInConflict[iNode];
 			// to move it to every timeslot except its existing one
-			for (int timeslot=1; timeslot<=k; timeslot++) {
+			for (int timeslot=0; timeslot<k; timeslot++) {
 				if (timeslot != t[node]) {
 					numConfChecks+=2;
 					int newValue = totalConflicts + conflicts[timeslot][node] - conflicts[t[node]][node];
