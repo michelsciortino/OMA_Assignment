@@ -125,14 +125,14 @@ int main(int argc, char ** argv)
 		confStream<<"1\t"<<"X"<<"\n";
 		timeStream<<"1\t"<<"X"<<"\n";
 	}
-	else{
-        cout<<"Unfeasible problem"<<endl;
-        exit(0);
-	}
+//	else{
+//        cout<<"Unfeasible problem"<<endl;
+//        exit(0);
+//	}
 
 
 	//MAIN ALGORITHM
-	//k--;
+	k--;
 	while(numConfChecks < maxChecks && k <= targetCols){
 		solFound = false;
 
@@ -157,7 +157,7 @@ int main(int argc, char ** argv)
 			if(popCosts[i] == 0){
 				solFound = true;
 				for(int j=0; j<g.n; j++)osp[j]=population[i][j];
-				//break;
+				break;
 			}
 			if(numConfChecks >= maxChecks){
 				for(int j=0; j<g.n; j++)osp[j]=population[i][j];
