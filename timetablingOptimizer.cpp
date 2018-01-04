@@ -11,6 +11,7 @@
 #include<vector>
 #include <math.h>
 
+using namespace std;
 
 //-------------------------------
 /* methods of the class MATRIX */
@@ -43,6 +44,7 @@ Optimizer::Optimizer(Problem data_, std::vector<int> initialSol) {
     data.nSlots = data_.nSlots;
     data.conflicts = data_.conflicts;
 
+    initialSolution=initialSol;
     currentSol = initialSol;
     bestSol = currentSol;
 
@@ -87,7 +89,7 @@ Optimizer::Optimizer(Problem data_, std::vector<int> initialSol) {
 }// Optimizer()
 
 
-void Optimizer::run() {
+vector<int> Optimizer::run() {
 // exacute an entire local search
     int flag;
     temperature = 1e15;
@@ -100,6 +102,7 @@ void Optimizer::run() {
         //printf("best so far = %d \n", currentObjective);
         //printf("flag=%d\n\n",flag);
     }
+    return bestSol;
 }
 
 int Optimizer::moveExam() {

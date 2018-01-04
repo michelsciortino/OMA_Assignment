@@ -38,13 +38,15 @@ public:
     //~Optimizer();
 
     int moveExam(); // execute one iteration of the local search
-    void run(); // execute an entire local search
+    std::vector<int> run(); // execute an entire local search
     int evaluate(std::vector<int> sol);
     int evaluateNeighbor(int changedExam, int newSlot);
     void acceptNeighbor(int changedExam, int newSlot);
 
     // Class containing the data of the timetabling problem to optimize
     Problem data;
+
+    std::vector<int> initialSolution;
 
     std::vector<int> currentSol; // current solution
     std::vector<int> bestSol; // best solution found so far

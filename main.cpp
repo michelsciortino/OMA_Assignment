@@ -218,14 +218,23 @@ int main(int argc, char ** argv)
 	ofstream solStrm;
 	solStrm.open("solution.sol");
 	//solStrm<<g.n<<"\n";
-	for(int i=0;i<g.n;i++)solStrm<<(i+1)<<" "<<bestColouring[i]+1<<"\n";
-	solStrm.close();
+//	for(int i=0;i<g.n;i++)solStrm<<(i+1)<<" "<<bestColouring[i]+1<<"\n";
+//	solStrm.close();
 
     // try to get an optimal solution
-    /* OPTIMIZATION
+    // OPTIMIZATION
     Optimizer opt(data, bestColouring);
-	opt.run();
-*/
+	vector<int> bestSol=opt.run();
+
+	for(int i=0;i<g.n;i++)
+        cout<<bestSol[i]<<endl;
+
+//	for(int i=0;i<g.n;i++)solStrm<<(i+1)<<" "<<bestColouring[i]+1<<"\n";
+//	solStrm.close();
+
+    for(int i=0;i<g.n;i++)solStrm<<(i+1)<<" "<<bestSol[i]+1<<"\n";
+        solStrm.close();
+
     printf("\n\nend\n\n\n\n");
     return(0);
 }
